@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import ProduceCard, { Produce } from '@/components/ProduceCard';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -175,6 +174,7 @@ const Marketplace: React.FC = () => {
       const offer = offers.find(o => o.id === offerId);
       if (!offer) throw new Error('Offer not found');
 
+      // First, update the offer status
       const { error: offerError } = await supabase
         .from('marketplace_offers')
         .update({ status: 'accepted' })
@@ -182,6 +182,7 @@ const Marketplace: React.FC = () => {
 
       if (offerError) throw offerError;
 
+      // Then, delete the product from marketplace
       const { error: productError } = await supabase
         .from('marketplace_products')
         .delete()
@@ -189,16 +190,17 @@ const Marketplace: React.FC = () => {
 
       if (productError) throw productError;
 
+      // Finally, create history record WITHOUT setting offer_id
       const { error: historyError } = await supabase
         .from('marketplace_offers_history')
         .insert({
-          offer_id: offerId,
           product_name: offer.marketplace_products.name,
           buyer_name: offer.borrower_name || 'Unknown',
           offer_amount: offer.offer_amount,
           status: 'accepted',
           seller_id: user?.id,
           message: offer.message
+          // Removed offer_id to avoid foreign key constraint issues
         });
 
       if (historyError) throw historyError;
@@ -225,6 +227,7 @@ const Marketplace: React.FC = () => {
       const offer = offers.find(o => o.id === offerId);
       if (!offer) throw new Error('Offer not found');
 
+      // First, update the offer status
       const { error: offerError } = await supabase
         .from('marketplace_offers')
         .update({ status: 'rejected' })
@@ -232,16 +235,17 @@ const Marketplace: React.FC = () => {
 
       if (offerError) throw offerError;
 
+      // Create history record WITHOUT setting offer_id
       const { error: historyError } = await supabase
         .from('marketplace_offers_history')
         .insert({
-          offer_id: offerId,
           product_name: offer.marketplace_products.name,
           buyer_name: offer.borrower_name || 'Unknown',
           offer_amount: offer.offer_amount,
           status: 'rejected',
           seller_id: user?.id,
           message: offer.message
+          // Removed offer_id to avoid foreign key constraint issues
         });
 
       if (historyError) throw historyError;

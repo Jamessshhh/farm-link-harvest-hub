@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import ProduceCard, { Produce } from '@/components/ProduceCard';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -190,7 +191,7 @@ const Marketplace: React.FC = () => {
 
       if (productError) throw productError;
 
-      // Finally, create history record WITHOUT setting offer_id
+      // Create history record for both seller and buyer
       const { error: historyError } = await supabase
         .from('marketplace_offers_history')
         .insert({
@@ -199,8 +200,8 @@ const Marketplace: React.FC = () => {
           offer_amount: offer.offer_amount,
           status: 'accepted',
           seller_id: user?.id,
+          buyer_id: offer.user_id, // Add buyer_id to track both sides
           message: offer.message
-          // Removed offer_id to avoid foreign key constraint issues
         });
 
       if (historyError) throw historyError;
@@ -235,7 +236,7 @@ const Marketplace: React.FC = () => {
 
       if (offerError) throw offerError;
 
-      // Create history record WITHOUT setting offer_id
+      // Create history record for both seller and buyer
       const { error: historyError } = await supabase
         .from('marketplace_offers_history')
         .insert({
@@ -244,8 +245,8 @@ const Marketplace: React.FC = () => {
           offer_amount: offer.offer_amount,
           status: 'rejected',
           seller_id: user?.id,
+          buyer_id: offer.user_id, // Add buyer_id to track both sides
           message: offer.message
-          // Removed offer_id to avoid foreign key constraint issues
         });
 
       if (historyError) throw historyError;
